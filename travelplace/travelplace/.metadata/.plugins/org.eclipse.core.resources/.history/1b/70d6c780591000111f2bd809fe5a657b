@@ -1,0 +1,78 @@
+package com.travel.service;
+
+import com.travel.domain.BatchLog;
+import com.travel.mapper.BatchLogMapper;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/*
+ 관리자 배치 로그 조회 서비스 구현체
+
+ 역할
+
+ 1 관리자 로그 화면 조회
+ 2 배치 성공률 계산
+ 3 최근 로그 조회
+ 4 전체 실행 횟수 조회
+*/
+@Service
+@RequiredArgsConstructor
+public class BatchLogServiceImpl implements BatchLogService {
+
+	// 배치 로그 Mapper 주입
+	private final BatchLogMapper batchLogMapper;
+
+	/*
+	 배치 로그 전체 조회
+	 관리자 로그 화면 조회 목적
+	*/
+	@Override
+	public List<BatchLog> getBatchLogs() {
+		return batchLogMapper.selectBatchLogs();
+	}
+
+	/*
+	 최근 배치 로그 조회
+
+	 최신 5건 조회
+	 대시보드 하단 로그 표시 목적
+	*/
+	@Override
+	public List<BatchLog> getRecentBatchLogs() {
+		return batchLogMapper.selectRecentBatchLogs(5);
+	}
+
+	/*
+	 총 배치 실행 횟수 조회
+
+	 전체 배치 실행 건수 반환
+	 대시보드 통계 카드용
+	*/
+	@Override
+	public int getBatchCount() {
+		return batchLogMapper.selectBatchCount();
+	}
+
+	/*
+	 배치 성공률 계산
+
+	 성공 건수 / 전체 건수 * 100
+	 소수점 두 자리까지 반환
+	*/
+	@Override
+	public double getBatchSuccessRate() {
+
+		int totalCount = batchLogMapper.selectBatchCount();
+
+		if (totalCount == 0) {
+			return 0.0;
+		}
+
+		int successCount = batchLogMapper.selectSuccessCount();
+
+		return Math.round((successCount * 100.0 / totalCount) * 100.0) / 100.0;
+	}
+}

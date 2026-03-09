@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.travel.travel.mapper.TravelDetailMapper">
+
+    <!--
+        여행지 상세 조회
+
+        travel_recommend_meta JOIN 제거
+        해당 테이블 삭제로 인해 JOIN 시 오류 발생
+        recommend_yn 컬럼도 함께 제거 (프론트 destination/[id]/page.tsx에서 사용 안 함)
+
+        테이블 별칭(tp.) 제거
+        단일 테이블 조회이므로 travel_place.컬럼명 대신 컬럼명만 사용
+    -->
+    <select id="selectTravelDetail" resultType="map">
+        SELECT
+            content_id,
+            title,
+            addr1,
+            addr2,
+            first_image,
+            map_x,
+            map_y
+        FROM travel_place
+        WHERE content_id = #{contentId}
+    </select>
+
+</mapper>

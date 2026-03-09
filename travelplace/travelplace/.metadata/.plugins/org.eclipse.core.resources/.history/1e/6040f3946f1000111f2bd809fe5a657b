@@ -1,0 +1,13 @@
+spring.application.name=batch-service
+
+tour.api.service-key=25b9430d70af95355363db8b304a86de9ad96e685cd0ef0ce0a311e38431e2a5
+server.port=8083
+mybatis.mapper-locations=classpath:mapper/*.xml
+
+spring.datasource.url=jdbc:mariadb://localhost:3306/travel?useUnicode=true&characterEncoding=utf8
+spring.datasource.username=root
+spring.datasource.password=wlstnek12^^
+#spring.datasource.password=rootpass
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+eureka.client.enabled=false
+mybatis.configuration.map-underscore-to-camel-case=true

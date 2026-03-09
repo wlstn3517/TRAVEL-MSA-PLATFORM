@@ -1,0 +1,49 @@
+# 서비스 이름 설정
+# gateway에서 서비스 식별 시 사용 가능
+spring.application.name=travel-service
+
+
+# JWT 서명 키 설정
+# access token 생성 시 암호화 키로 사용
+# 최소 32byte 이상 문자열 권장
+jwt.secret=travel-jwt-secret-key-2026-secure-auth-service-token
+# 서버 포트 설정
+# auth service gateway service 와 충돌 방지용
+server.port=8082
+
+
+# MariaDB 데이터베이스 연결 설정
+# 실제 계정 비밀번호 환경에 맞게 수정 필요
+spring.datasource.url=jdbc:mariadb://localhost:3306/travel
+spring.datasource.username=root
+#spring.datasource.password=wlstnek12^^
+spring.datasource.password=rootpass
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+
+
+# MyBatis 매퍼 XML 위치 설정
+# mapper 폴더 기준 자동 로딩
+mybatis.mapper-locations=classpath:mapper/*.xml
+
+
+# MyBatis 카멜 케이스 자동 매핑
+# DB snake case 컬럼과 Java 필드 자동 매칭
+mybatis.configuration.map-underscore-to-camel-case=true
+
+
+# actuator endpoint 노출 설정 health 
+# 서비스 상태 확인용
+management.endpoints.web.exposure.include=health,info
+
+
+# 로그 레벨 설정 기본 INFO
+logging.level.root=INFO
+
+# Eureka 클라이언트 활성화
+# eureka-server에 travel-service로 등록됨
+eureka.client.enabled=true
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.instance.prefer-ip-address=true
+
+# MyBatis 타입 별칭 패키지 설정
+mybatis.type-aliases-package=com.travel.travel

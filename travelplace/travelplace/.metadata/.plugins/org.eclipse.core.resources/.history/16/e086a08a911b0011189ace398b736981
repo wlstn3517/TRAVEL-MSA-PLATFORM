@@ -1,0 +1,38 @@
+spring.application.name=auth-service
+
+# 구글 OAuth 클라이언트 ID
+# aud 검증에 사용 - 우리 앱에서 발급된 토큰인지 확인
+# 다른 구글 앱의 토큰으로 우리 서비스에 접근하는 것을 차단
+google.client-id=709838508583-d7fbl3vgctsfrssrhiumb1u0u0m9gs8n.apps.googleusercontent.com
+# JWT 서명 키 설정
+# access token 생성 시 암호화 키로 사용
+# 최소 32byte 이상 문자열 권장
+jwt.secret=travel-jwt-secret-key-2026-secure-auth-service-token
+
+server.port=8081
+# access token 만료시간 설정
+# 단위 밀리초 3600000 = 1시간
+jwt.access-token-expire-ms=3600000
+
+mybatis.mapper-locations=classpath:mapper/*.xml
+
+spring.datasource.url=jdbc:mariadb://localhost:3306/travel?useUnicode=true&characterEncoding=utf8
+spring.datasource.username=root
+#spring.datasource.password=wlstnek12^^
+spring.datasource.password=rootpass
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+# Eureka 클라이언트 활성화
+# eureka-server에 auth-service로 등록됨
+eureka.client.enabled=true
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.instance.prefer-ip-address=true
+
+# Spring Security 디버그 로그 활성화
+logging.level.org.springframework.security=DEBUG
+
+# 인증 필터 흐름 상세 로그 추가
+logging.level.org.springframework.security.web=DEBUG
+# 매핑용
+mybatis.configuration.map-underscore-to-camel-case=true
+# 인증 처리 내부 로직 로그
+logging.level.org.springframework.security.authentication=DEBUG

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.travel.auth.mapper.UserMapper">
+
+	<!-- username 기준 사용자 조회 로그인 인증용 -->
+	<select id="findByUsername"
+		resultType="com.travel.auth.domain.User">
+
+		SELECT
+		username,
+		password,
+		name,
+		role,
+		email,
+		phone,
+		postcode,
+		road_address,
+		jibun_address,
+		detail_address,
+		created_at
+		FROM users
+		WHERE username = #{username}
+
+	</select>
+
+	<!-- 신규 회원가입 사용자 저장 -->
+	<insert id="insertUser">
+
+		INSERT INTO users (
+		username,
+		password,
+		name,
+		role,
+		email,
+		phone,
+		postcode,
+		road_address,
+		jibun_address,
+		detail_address,
+		created_at
+		)
+		VALUES (
+		#{username},
+		#{password},
+		#{name},
+		#{role},
+		#{email},
+		#{phone},
+		#{postcode},
+		#{roadAddress},
+		#{jibunAddress},
+		#{detailAddress},
+		NOW()
+		)
+
+	</insert>
+	<update id="updateUser">
+
+		UPDATE users SET
+		name = #{name},
+		email = #{email},
+		phone = #{phone},
+		postcode = #{postcode},
+		road_address = #{roadAddress},
+		jibun_address = #{jibunAddress},
+		detail_address = #{detailAddress},
+		updated_at = NOW()
+		WHERE
+		username = #{username}
+	</update>
+
+	<!-- 관리자용 전체 사용자 조회 -->
+	<select id="findAllUsers"
+		resultType="com.travel.auth.domain.User">
+
+		SELECT
+		username,
+		password,
+		name,
+		role,
+		email,
+		phone,
+		postcode,
+		road_address,
+		jibun_address,
+		detail_address,
+		created_at
+		FROM users
+		ORDER BY created_at DESC
+	</select>
+
+	<!-- 관리자용 사용자 권한 변경 -->
+	<update id="updateUserRole">
+
+		UPDATE users
+		SET role = #{role}
+		WHERE username = #{username}
+	</update>
+
+	<!-- 전체 사용자 수 조회 대시보드 통계 카드용 -->
+	<select id="countAllUsers" resultType="int">
+		SELECT COUNT(*)
+		FROM users
+	</select>
+
+	<!-- 오늘 가입자 수 조회 대시보드 통계 카드용 -->
+	<select id="countTodayUsers" resultType="int">
+		SELECT COUNT(*)
+		FROM users
+		WHERE DATE(created_at) = CURDATE()
+	</select>
+
+	<!-- 최근 7일 일별 가입자 수 조회 대시보드 차트용 -->
+	<select id="selectDailyGrowth" resultType="map">
+		SELECT
+		    DATE_FORMAT(created_at, '%m-%d') AS date,
+		    COUNT(*) AS count
+		FROM users
+		WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+		GROUP BY DATE(created_at)
+		ORDER BY DATE(created_at) ASC
+	</select>
+</mapper>

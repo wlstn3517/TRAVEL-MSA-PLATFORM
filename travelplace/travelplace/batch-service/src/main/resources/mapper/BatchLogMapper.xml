@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Batch 로그 MyBatis Mapper 역할 1 배치 시작 로그 기록 2 배치 종료 상태 업데이트 3 동시 실행 방지 
+	named lock 관리 4 관리자 화면 배치 로그 조회 주의사항 기존 insert update lock 쿼리는 운영 배치와 연결 
+	가능 절대 구조 변경 금지 -->
+
+<mapper namespace="com.travel.mapper.BatchLogMapper">
+
+	<!-- 배치 시작 로그 저장 실행 시 상태 RUNNING 기록 batch_id 자동 생성 후 entity batchId 세팅됨 -->
+	<insert id="insertBatchStart" useGeneratedKeys="true"
+		keyProperty="batchId">
+
+		INSERT INTO batch_log
+		(batch_name, start_time, status)
+		VALUES
+		(#{batchName}, NOW(), 'RUNNING')
+
+	</insert>
+
+	<!-- 배치 종료 로그 업데이트 성공 실패 여부 상태 저장 처리 건수 및 오류 메시지 기록 -->
+	<update id="updateBatchEnd">
+
+		UPDATE batch_log
+		SET end_time = NOW(),
+		status = #{status},
+		processed_count = #{processedCount},
+		error_message = #{errorMessage}
+		WHERE batch_id = #{batchId}
+
+	</update>
+
+	<!-- DB named lock 획득 배치 중복 실행 방지 목적 0 반환 시 lock 실패 -->
+	<select id="getNamedLock" resultType="int">
+
+		SELECT
+		GET_LOCK(#{lockName}, 0)
+
+	</select>
+
+	<!-- DB named lock 해제 배치 완료 후 반드시 호출 -->
+	<select id="releaseNamedLock" resultType="int">
+
+		SELECT
+		RELEASE_LOCK(#{lockName})
+
+	</select>
+
+	<!-- 관리자 배치 로그 조회 최신 실행 로그부터 조회 관리자 로그 화면 API 사용 -->
+	<select id="selectBatchLogs" resultMap="batchLogMap">
+
+		SELECT *
+		FROM batch_log
+		ORDER BY batch_id DESC
+
+	</select>
+
+	<!-- batch_log 테이블 → BatchLog 엔티티 매핑 snake_case DB 컬럼을 camelCase Java 필드로 
+		변환 -->
+	<resultMap id="batchLogMap" type="com.travel.domain.BatchLog">
+
+		<id property="batchId" column="batch_id" />
+		<result property="batchName" column="batch_name" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="status" column="status" />
+		<result property="processedCount" column="processed_count" />
+		<result property="errorMessage" column="error_message" />
+		<result property="regDt" column="reg_dt" />
+
+	</resultMap>
+	<!-- 총 배치 실행 횟수 조회 관리자 대시보드 통계용 -->
+	<select id="selectBatchCount" resultType="int">
+
+		SELECT COUNT(*)
+		FROM batch_log
+
+	</select>
+	<!-- 성공 배치 실행 횟수 조회 status SUCCESS 기준 성공률 계산용 -->
+	<select id="selectSuccessCount" resultType="int">
+
+		SELECT COUNT(*)
+		FROM batch_log
+		WHERE status = 'SUCCESS'
+
+	</select>
+	<!-- 최근 배치 로그 조회 관리자 대시보드 최근 실행 로그 표시용 limit 개수만큼 최신 조회 -->
+	<select id="selectRecentBatchLogs" parameterType="int"
+		resultMap="batchLogMap">
+
+		SELECT *
+		FROM batch_log
+		ORDER BY batch_id DESC
+		LIMIT #{limit}
+
+	</select>
+</mapper>

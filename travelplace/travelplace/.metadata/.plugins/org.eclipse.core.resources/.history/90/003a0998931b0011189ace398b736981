@@ -1,0 +1,73 @@
+package com.travel.auth.service;
+
+import com.travel.auth.domain.User;
+import com.travel.auth.dto.SignupRequest;
+import com.travel.auth.mapper.UserMapper;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+
+/*
+ 회원가입 서비스
+
+ 역할
+
+ 사용자 회원가입 처리 담당
+
+ 비밀번호 암호화
+ USER 권한 기본 설정
+ 생성일시 세팅 후 DB 저장
+*/
+
+@Service
+@RequiredArgsConstructor
+public class SignupService {
+
+    // 사용자 DB 처리 Mapper
+    private final UserMapper userMapper;
+
+    // BCrypt 암호화 처리
+    private final PasswordEncoder passwordEncoder;
+
+    /*
+     회원가입 처리 메소드
+
+     비밀번호 암호화
+     USER 권한 설정
+     생성일시 세팅 후 DB insert
+    */
+    public void signup(SignupRequest req) {
+
+        User user = new User();
+
+        // username 설정
+        user.setUsername(req.getUsername());
+
+        // 비밀번호 BCrypt 암호화 후 저장
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+
+        // 기본 권한 USER 설정
+        user.setRole("USER");
+
+        // 회원가입 정보 저장
+        user.setUsername(req.getName());
+        user.setEmail(req.getEmail());
+        user.setPhone(req.getPhone());
+
+        // 주소 API 결과 저장
+        user.setPostcode(req.getPostcode());
+        user.setRoadAddress(req.getRoadAddress());
+        user.setJibunAddress(req.getJibunAddress());
+        user.setDetailAddress(req.getDetailAddress());
+
+        // 생성일시 현재시간 세팅
+        user.setCreatedAt(LocalDateTime.now());
+
+        // DB insert 실행
+        userMapper.insertUser(user);
+    }
+}

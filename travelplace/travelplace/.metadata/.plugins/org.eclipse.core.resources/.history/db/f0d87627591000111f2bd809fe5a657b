@@ -1,0 +1,84 @@
+package com.travel.mapper;
+
+import com.travel.domain.BatchLog;
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+/*
+ 배치 로그 Mapper 인터페이스
+
+ 역할
+
+ 1 배치 실행 로그 저장 및 종료 처리
+ 2 DB named lock 관리 중복 실행 방지
+ 3 관리자 배치 로그 조회 화면 지원
+
+ 기존 기능 절대 변경 금지
+ 조회 기능만 확장 추가
+*/
+@Mapper
+public interface BatchLogMapper {
+
+	/*
+	 배치 시작 로그 저장
+
+	 배치 시작 시 insert 실행
+	 상태 RUNNING으로 기록
+	*/
+	void insertBatchStart(BatchLog log);
+
+	/*
+	 배치 종료 로그 업데이트
+
+	 종료 시간 상태 처리건수 오류메시지 업데이트
+	 SUCCESS FAIL 상태 기록
+	*/
+	void updateBatchEnd(BatchLog log);
+
+	/*
+	 DB named lock 획득
+
+	 동일 배치 중복 실행 방지 목적
+	 MySQL GET_LOCK 사용 예상
+	*/
+	Integer getNamedLock(@Param("lockName") String lockName);
+
+	/*
+	 DB named lock 해제
+
+	 배치 종료 후 반드시 해제
+	*/
+	Integer releaseNamedLock(@Param("lockName") String lockName);
+
+	/*
+	 전체 배치 로그 조회
+
+	 관리자 배치 로그 화면용
+	 최신 로그부터 정렬 조회
+	*/
+	List<BatchLog> selectBatchLogs();
+
+	/*
+	 최근 배치 로그 N건 조회
+
+	 관리자 대시보드 간략 로그 표시용
+	*/
+	List<BatchLog> selectRecentBatchLogs(@Param("limit") int limit);
+
+	/*
+	 상태별 배치 로그 조회
+
+	 SUCCESS FAIL RUNNING 상태 필터링
+	 관리자 분석 화면 확장 대비
+	*/
+	List<BatchLog> selectBatchLogsByStatus(@Param("status") String status);
+
+	/*
+	 오늘 실행된 배치 로그 조회
+
+	 일일 배치 성공 여부 확인 목적
+	*/
+	List<BatchLog> selectTodayBatchLogs();
+}

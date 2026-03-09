@@ -1,0 +1,51 @@
+# \uC11C\uBE44\uC2A4 \uC774\uB984 \uC124\uC815
+# gateway\uC5D0\uC11C \uC11C\uBE44\uC2A4 \uC2DD\uBCC4 \uC2DC \uC0AC\uC6A9 \uAC00\uB2A5
+spring.application.name=travel-service
+
+
+# JWT \uC11C\uBA85 \uD0A4 \uC124\uC815
+# access token \uC0DD\uC131 \uC2DC \uC554\uD638\uD654 \uD0A4\uB85C \uC0AC\uC6A9
+# \uCD5C\uC18C 32byte \uC774\uC0C1 \uBB38\uC790\uC5F4 \uAD8C\uC7A5
+jwt.secret=YOUR_JWT_SECRET
+
+# \uC11C\uBC84 \uD3EC\uD2B8 \uC124\uC815
+# auth service gateway service \uC640 \uCDA9\uB3CC \uBC29\uC9C0\uC6A9
+server.port=8082
+
+
+# MariaDB \uB370\uC774\uD130\uBCA0\uC774\uC2A4 \uC5F0\uACB0 \uC124\uC815
+# \uC2E4\uC81C \uACC4\uC815 \uBE44\uBC00\uBC88\uD638 \uD658\uACBD\uC5D0 \uB9DE\uAC8C \uC218\uC815 \uD544\uC694
+spring.datasource.url=jdbc:mariadb://localhost:3306/travel
+spring.datasource.username=DB_USERNAME
+spring.datasource.password=DB_PASSWORD
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+
+
+# MyBatis \uB9E4\uD37C XML \uC704\uCE58 \uC124\uC815
+# mapper \uD3F4\uB354 \uAE30\uC900 \uC790\uB3D9 \uB85C\uB529
+mybatis.mapper-locations=classpath:mapper/*.xml
+
+
+# MyBatis \uCE74\uBA5C \uCF00\uC774\uC2A4 \uC790\uB3D9 \uB9E4\uD551
+# DB snake case \uCEEC\uB7FC\uACFC Java \uD544\uB4DC \uC790\uB3D9 \uB9E4\uCE6D
+mybatis.configuration.map-underscore-to-camel-case=true
+
+
+# actuator endpoint \uB178\uCD9C \uC124\uC815 health
+# \uC11C\uBE44\uC2A4 \uC0C1\uD0DC \uD655\uC778\uC6A9
+management.endpoints.web.exposure.include=health,info
+
+
+# \uB85C\uADF8 \uB808\uBCA8 \uC124\uC815 \uAE30\uBCF8 INFO
+logging.level.root=INFO
+
+
+# Eureka \uD074\uB77C\uC774\uC5B8\uD2B8 \uD65C\uC131\uD654
+# eureka-server\uC5D0 travel-service\uB85C \uB4F1\uB85D\uB428
+eureka.client.enabled=true
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.instance.prefer-ip-address=true
+
+
+# MyBatis \uD0C0\uC785 \uBCC4\uCE6D \uD328\uD0A4\uC9C0 \uC124\uC815
+mybatis.type-aliases-package=com.travel.travel

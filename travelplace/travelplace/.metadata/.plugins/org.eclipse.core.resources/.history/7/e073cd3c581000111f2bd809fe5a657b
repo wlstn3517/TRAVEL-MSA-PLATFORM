@@ -1,0 +1,65 @@
+package com.travel.service;
+
+import com.travel.domain.BatchLog;
+import java.util.List;
+
+/*
+ 관리자 배치 로그 서비스 인터페이스
+
+ 역할
+
+ 배치 실행 로그 저장 조회 통계 처리
+ 관리자 화면 및 대시보드 API 지원 목적
+*/
+public interface BatchLogService {
+
+    /*
+     배치 시작 로그 저장
+    */
+    void insertBatchStart(BatchLog log);
+
+    /*
+     배치 종료 로그 업데이트
+    */
+    void updateBatchEnd(BatchLog log);
+
+    /*
+     전체 배치 로그 조회
+     관리자 로그 화면용
+    */
+    List<BatchLog> getBatchLogs();
+
+    /*
+     DB named lock 획득
+     동시 실행 방지용
+    */
+    Integer getNamedLock(String lockName);
+
+    /*
+     DB named lock 해제
+    */
+    Integer releaseNamedLock(String lockName);
+
+    /*
+     배치 성공률 조회
+
+     SUCCESS 상태 비율 계산
+     대시보드 통계 카드용
+    */
+    double getBatchSuccessRate();
+
+    /*
+     최근 배치 로그 조회
+
+     최신 실행 로그 일부 조회
+     대시보드 하단 로그 표시용
+    */
+    List<BatchLog> getRecentBatchLogs();
+
+    /*
+     총 배치 실행 횟수 조회
+
+     대시보드 통계 카드용
+    */
+    int getBatchCount();
+}

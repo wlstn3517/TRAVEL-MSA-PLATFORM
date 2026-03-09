@@ -1,0 +1,24 @@
+# backend
+target/
+build/
+
+# frontend
+node_modules/
+.next/
+dist/
+build/
+
+# env
+.env
+.env.local
+
+# logs
+*.log
+
+# IDE
+.idea
+.vscode
+*.iml
+# 보안상 제외 
+application.properties
+*/application.properties

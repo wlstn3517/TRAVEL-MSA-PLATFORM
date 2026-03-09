@@ -1,0 +1,35 @@
+package com.travel.admin.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+
+/*
+ 관리자 사용자 방문 이력 조회 컨트롤러
+
+ 관리자가 username으로 검색 → 해당 사용자의 최근 여행지 방문 이력 반환
+ travel-service 내부 API를 Eureka 통해 호출
+*/
+@RestController
+@RequestMapping("/api/admin/history")
+@RequiredArgsConstructor
+public class AdminViewHistoryController {
+
+	// @LoadBalanced RestTemplate (RestTemplateConfig에서 등록)
+	private final RestTemplate restTemplate;
+
+	// travel-service 내부 방문 이력 API
+	private static final String TRAVEL_HISTORY_URL = "http://travel-service/internal/view-history";
+
+	/*
+	 * 특정 사용자의 최근 방문 이력 조회 관리자 방문 이력 페이지에서 username 검색 후 호출 최신순 최대 10건 반환
+	 */
+	@GetMapping
+	public ResponseEntity<List> getHistory(@RequestParam String username) {
+		List history = restTemplate.getForObject(TRAVEL_HISTORY_URL + "/" + username, List.class);
+		return ResponseEntity.ok(history);
+	}
+}

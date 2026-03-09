@@ -1,0 +1,52 @@
+########################################################
+# Admin Service \uAE30\uBCF8 \uC124\uC815
+########################################################
+
+# \uC11C\uBE44\uC2A4 \uC774\uB984 (Eureka\uC5D0 \uC774 \uC774\uB984\uC73C\uB85C \uB4F1\uB85D\uB428)
+# gateway\uC5D0\uC11C lb://admin-service \uB85C \uB77C\uC6B0\uD305\uB428
+spring.application.name=admin-service
+
+# \uD3EC\uD2B8 (\uAE30\uC874 \uC11C\uBE44\uC2A4\uC640 \uCDA9\uB3CC \uBC29\uC9C0)
+# auth: 8081, travel: 8082, batch: 8083 \uC774\uBBC0\uB85C 8084 \uC0AC\uC6A9
+server.port=8084
+
+########################################################
+# JWT \uC124\uC815
+# auth-service\uC640 \uB3D9\uC77C\uD55C \uC2DC\uD06C\uB9BF \uD0A4 \uC0AC\uC6A9
+# \uB3D9\uC77C\uD55C \uD0A4\uC5EC\uC57C \uD1A0\uD070 \uAC80\uC99D \uAC00\uB2A5
+########################################################
+
+jwt.secret=YOUR_JWT_SECRET
+
+########################################################
+# Eureka Client \uC124\uC815
+# Eureka \uC11C\uBC84\uC5D0 admin-service\uB85C \uB4F1\uB85D
+# RestTemplate\uC758 lb:// \uB3D9\uC801 \uB77C\uC6B0\uD305\uC5D0 \uD544\uC694
+########################################################
+
+# Eureka \uC11C\uBC84 \uC8FC\uC18C
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+
+# Eureka \uD074\uB77C\uC774\uC5B8\uD2B8 \uD65C\uC131\uD654
+eureka.client.enabled=true
+
+# Eureka\uC5D0\uC11C \uB2E4\uB978 \uC11C\uBE44\uC2A4 \uBAA9\uB85D \uC870\uD68C (lb:// \uB77C\uC6B0\uD305\uC5D0 \uD544\uC694)
+eureka.client.fetch-registry=true
+
+# admin-service \uC790\uC2E0\uB3C4 Eureka\uC5D0 \uB4F1\uB85D
+eureka.client.register-with-eureka=true
+
+# IP \uC8FC\uC18C \uAE30\uBC18 \uB4F1\uB85D (\uB85C\uCEEC \uD658\uACBD \uD638\uD658\uC131)
+eureka.instance.prefer-ip-address=true
+
+########################################################
+# Actuator \uC124\uC815
+########################################################
+
+management.endpoints.web.exposure.include=health,info
+
+########################################################
+# \uB85C\uADF8 \uC124\uC815
+########################################################
+
+logging.level.root=INFO

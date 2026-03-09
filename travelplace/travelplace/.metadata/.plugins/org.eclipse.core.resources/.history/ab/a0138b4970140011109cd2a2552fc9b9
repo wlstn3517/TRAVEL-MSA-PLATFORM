@@ -1,0 +1,86 @@
+//package com.travel.api;
+//
+//import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.boot.CommandLineRunner;
+//import org.springframework.stereotype.Component;
+//import org.springframework.web.client.RestTemplate;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.travel.dto.TourApiResponse;
+//
+///*
+// 관광공사 API 호출 전용.
+// 외부 API 호출
+// DTO로 변환
+// Service에 전달
+// */
+//@Component
+//public class TourApiClient implements CommandLineRunner {
+//
+//	@Override
+//	// 애플리케이션 실행시 api 호출 테스트 부분
+//	public void run(String... args) {
+//		testCall();
+//	}
+//
+//	// application.yml에 설정한 서비스키 읽기
+//	@Value("${tour.api.service-key}")
+//	private String serviceKey;
+//
+//	// 관광공사 API 호출 BASE URL (공통 prefix)
+//	private static final String BASE_URL = "https://apis.data.go.kr/B551011/KorService2/";
+//
+//	/* 우리 서비스 → 외부 API 요청 보내기 */
+//	private final RestTemplate restTemplate = new RestTemplate();
+//
+//	// 관광지 정보 조회 api호출
+//	public String callAreaBasedList(int pageNo) {
+//
+//		String url = BASE_URL + "areaBasedList2" + "?serviceKey=" + serviceKey + "&MobileOS=ETC"
+//				+ "&MobileApp=TravelApp" + "&numOfRows=1000" + "&pageNo=" + pageNo // 페이지 동적 처리
+//				+ "&_type=json";
+//
+//		return restTemplate.getForObject(url, String.class);
+//	}
+//
+//	// API 호출 테스트
+//	public void testCall() {
+//
+//		String result = callAreaBasedList(1);
+//
+//		TourApiResponse response = parseResponse(result);
+//
+//		// DTO 변환 실패 체크 (필수)
+//		if (response == null) {
+//			System.out.println("DTO 변환 실패");
+//			return;
+//		}
+//
+//		// 공공데이터 API는 HTTP 200이어도 실패 코드 있음 → 반드시 체크
+//		String resultCode = response.getResponse().getHeader().getResultCode();
+//
+//		String resultMsg = response.getResponse().getHeader().getResultMsg();
+//
+//		// API 응답 코드 체크 (필수)
+//		if (!"0000".equals(resultCode)) {
+//			System.out.println("API 호출 실패: " + resultMsg);
+//			return;
+//		}
+//
+//		// 정상 처리
+//		System.out.println("API 정상 호출");
+//	}
+//
+//	// JSON → DTO 변환용 ObjectMapper
+//	private final ObjectMapper objectMapper = new ObjectMapper();
+//
+//	// TourApiClient 내부에서 DTO 변환 테스트용.
+//	public TourApiResponse parseResponse(String json) {
+//
+//		try {
+//			return objectMapper.readValue(json, TourApiResponse.class);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
+//}

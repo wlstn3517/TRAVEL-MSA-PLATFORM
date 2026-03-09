@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.travel.travel.mapper.CouponMapper">
+
+	<!-- 여행지 기반 쿠폰 정책 조회 -->
+	<select id="findCouponMasterByTravelId"
+		resultType="com.travel.travel.domain.CouponMaster">
+
+		SELECT
+		coupon_id,
+		coupon_code,
+		coupon_name,
+		discount_type,
+		discount_value,
+		travel_id
+		FROM coupon_master
+		WHERE travel_id =
+		#{travelId}
+		LIMIT 1
+
+	</select>
+
+	<!-- 사용자 쿠폰 중복 발급 체크 -->
+	<select id="existsIssuedCoupon" resultType="int">
+
+		SELECT COUNT(*)
+		FROM
+		travel_coupon
+		WHERE username = #{username}
+		AND coupon_id = #{couponId}
+
+	</select>
+
+	<!-- 쿠폰 발급 이력 저장 -->
+	<insert id="insertIssuedCoupon">
+
+		INSERT INTO travel_coupon (
+		username,
+		coupon_id,
+		travel_id,
+		issued_at,
+		created_at
+		)
+		VALUES (
+		#{username},
+		#{couponId},
+		#{travelId},
+		NOW(),
+		NOW()
+		)
+
+	</insert>
+
+	<!-- 사용자 쿠폰 조회 SQL 목적 로그인한 사용자의 쿠폰 발급 이력 조회 구조 설명 travel_coupon 사용자별 쿠폰 
+		발급 이력 테이블 coupon_master 쿠폰 정책 정보 테이블 쿠폰 이름 할인 타입 할인값 등 저장 두 테이블 JOIN 해서 마이페이지 
+		표시 데이터 구성 -->
+
+	<select id="findMyCoupons" resultType="map">
+
+		SELECT
+		cm.coupon_name     AS couponName,    <!-- 쿠폰 이름 화면 표시용 -->
+		cm.discount_type   AS discountType,   <!-- 할인 타입 percent amount -->
+		cm.discount_value  AS discountValue,  <!-- 할인 값 -->
+		tc.travel_id       AS travelId,  <!-- 발급 당시 여행지 ID -->
+		tc.issued_at       AS issuedAt,  <!-- 발급 시간 -->
+		tc.used_yn          AS usedYn  <!-- 사용 여부 -->
+
+		FROM travel_coupon tc
+
+		<!-- 쿠폰 정책 정보 가져오기 -->
+		JOIN coupon_master cm
+		ON tc.coupon_id = cm.coupon_id
+
+		<!-- 로그인 사용자 기준 조회 -->
+		WHERE tc.username = #{username}
+
+		<!-- 최신 쿠폰 먼저 표시 -->
+		ORDER BY tc.issued_at DESC
+
+	</select>
+
+	<!-- 전체 발급 쿠폰 수 조회 대시보드 통계 카드용 -->
+	<select id="countTotalIssuedCoupons" resultType="int">
+		SELECT COUNT(*)
+		FROM travel_coupon
+	</select>
+
+	<!-- 쿠폰 타입별 발급 건수 조회 대시보드 차트용 -->
+	<select id="selectCouponTypeStats" resultType="map">
+		SELECT
+		    cm.coupon_name AS couponName,
+		    COUNT(*)       AS count
+		FROM travel_coupon tc
+		JOIN coupon_master cm ON tc.coupon_id = cm.coupon_id
+		GROUP BY cm.coupon_name
+		ORDER BY count DESC
+	</select>
+
+	<!-- 관리자용 전체 발급 쿠폰 목록 조회 -->
+	<select id="findAllIssuedCoupons" resultType="map">
+		SELECT
+		    tc.username      AS username,
+		    cm.coupon_name   AS couponName,
+		    cm.discount_type AS discountType,
+		    cm.discount_value AS discountValue,
+		    tc.travel_id     AS travelId,
+		    tc.issued_at     AS issuedAt,
+		    tc.used_yn       AS usedYn
+		FROM travel_coupon tc
+		JOIN coupon_master cm ON tc.coupon_id = cm.coupon_id
+		ORDER BY tc.issued_at DESC
+	</select>
+
+	<!-- 쿠폰 마스터 전체 목록 조회 대시보드 최근 쿠폰 생성 기록용 -->
+	<select id="findAllCouponMasters" resultType="com.travel.travel.domain.CouponMaster">
+		SELECT
+		    coupon_id,
+		    coupon_code,
+		    coupon_name,
+		    discount_type,
+		    discount_value,
+		    travel_id
+		FROM coupon_master
+		ORDER BY coupon_id DESC
+	</select>
+
+	<!--
+		쿠폰 마스터(정책) 신규 등록
+		관리자가 쿠폰 정책을 직접 생성할 때 사용
+		coupon_code 는 호출 전 UUID 기반으로 자동 생성되어 전달됨
+		useGeneratedKeys 로 INSERT 후 생성된 coupon_id 를 couponMaster.couponId 에 자동 주입
+	-->
+	<insert id="insertCouponMaster"
+		parameterType="com.travel.travel.domain.CouponMaster"
+		useGeneratedKeys="true"
+		keyProperty="couponId">
+		INSERT INTO coupon_master (
+		    coupon_code,
+		    coupon_name,
+		    discount_type,
+		    discount_value,
+		    travel_id
+		) VALUES (
+		    #{couponCode},
+		    #{couponName},
+		    #{discountType},
+		    #{discountValue},
+		    #{travelId}
+		)
+	</insert>
+</mapper>

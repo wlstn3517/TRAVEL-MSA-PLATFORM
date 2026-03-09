@@ -1,0 +1,45 @@
+package com.travel.controller;
+
+import com.travel.domain.BatchLog;
+import com.travel.service.BatchLogService;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/*
+ 관리자 배치 로그 조회 Controller
+ 관리자 화면 로그 확인용 API
+ */
+@RestController
+@RequestMapping("/admin/batch")
+@RequiredArgsConstructor
+public class BatchLogController {
+
+    private final BatchLogService batchLogService;
+
+    // 전체 로그 조회
+    @GetMapping("/logs")
+    public List<BatchLog> getBatchLogs() {
+        return batchLogService.getBatchLogs();
+    }
+
+    // 배치 성공률
+    @GetMapping("/success-rate")
+    public double getBatchSuccessRate() {
+        return batchLogService.getBatchSuccessRate();
+    }
+
+    // 최근 배치 로그
+    @GetMapping("/recent")
+    public List<BatchLog> getRecentLogs() {
+        return batchLogService.getRecentBatchLogs();
+    }
+
+    // 총 배치 실행 횟수
+    @GetMapping("/count")
+    public int getBatchCount() {
+        return batchLogService.getBatchCount();
+    }
+}

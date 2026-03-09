@@ -1,0 +1,168 @@
+package com.travel.auth.config;
+
+import com.travel.auth.security.JwtAuthenticationFilter;
+import com.travel.auth.security.JwtTokenProvider;
+import com.travel.auth.service.AuthUserDetailsService;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+/*
+ 시큐리티 기본 설정
+ 세션 사용 안함 JWT 인증 기반 구조
+ 관리자 사용자 권한 분리 처리
+
+ 중요
+
+ msa 구조에서는 cors는 gateway에서만 처리
+ auth service travel service 같은 내부 서비스는 cors 제거
+ cors 중복 발생 시 로그인 실패 발생 가능
+*/
+
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthUserDetailsService authUserDetailsService;
+
+    public SecurityConfig(JwtTokenProvider jwtTokenProvider,
+                          AuthUserDetailsService authUserDetailsService) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.authUserDetailsService = authUserDetailsService;
+    }
+
+    /*
+     비밀번호 암호화 처리
+     회원가입 저장 및 로그인 검증용
+     bcrypt spring security 기본 권장 방식
+    */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /*
+     AuthenticationProvider 등록
+     db 사용자 인증 연결 핵심 부분
+     username password 검증 담당
+    */
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
+
+        // 사용자 조회 service 연결
+        provider.setUserDetailsService(authUserDetailsService);
+
+        // bcrypt 암호화 검증 연결
+        provider.setPasswordEncoder(passwordEncoder());
+
+        return provider;
+    }
+
+    /*
+     AuthenticationManager 등록
+     spring security 인증 매니저
+     로그인 처리 핵심 객체
+    */
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+
+        return config.getAuthenticationManager();
+    }
+
+    /*
+     Security 필터 체인 설정
+     jwt 인증 기반 stateless 구조
+    */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        JwtAuthenticationFilter jwtFilter =
+                new JwtAuthenticationFilter(jwtTokenProvider);
+
+        http
+            /*
+             csrf 비활성화
+
+             jwt 인증은 세션 방식 아니므로 csrf 필요 없음
+            */
+            .csrf(csrf -> csrf.disable())
+
+            /*
+             cors 완전 비활성화
+
+             msa 구조에서는 gateway에서만 cors 처리
+             auth service에서 cors 처리하면
+             access control allow origin 중복 발생
+
+             즉 login 실패 원인됨
+            */
+            .cors(cors -> cors.disable())
+
+            /*
+             세션 미사용 jwt 인증 구조
+             서버에 로그인 상태 저장 안함
+            */
+            .sessionManagement(sm ->
+                sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            /*
+             기본 로그인 폼 logout 비활성화
+             jwt 구조에서는 사용 안함
+            */
+            .formLogin(form -> form.disable())
+            .logout(logout -> logout.disable())
+
+            /*
+             api 접근 권한 설정
+            */
+            .authorizeHttpRequests(auth -> auth
+
+                // 로그인 회원가입 인증 없이 허용
+                .requestMatchers("/api/auth/**").permitAll()
+
+                // spring 기본 에러 페이지 허용
+                .requestMatchers("/error").permitAll()
+
+                // actuator 모니터링 허용 필요 시만 유지
+                .requestMatchers("/actuator/**").permitAll()
+
+                /*
+                 내부 서비스 전용 API 허용
+                 admin-service가 Eureka를 통해 직접 호출하는 경로
+                 gateway에는 라우팅 등록 안 됨 외부 접근 불가
+                */
+                .requestMatchers("/internal/**").permitAll()
+
+                // 나머지 api 인증 필요
+                .anyRequest().authenticated())
+
+            // db 인증 provider 등록
+            .authenticationProvider(authenticationProvider())
+
+            /*
+             jwt 인증 필터 등록
+
+             username password filter 전에 실행
+             토큰 검증 담당
+            */
+            .addFilterBefore(jwtFilter,
+                    UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}

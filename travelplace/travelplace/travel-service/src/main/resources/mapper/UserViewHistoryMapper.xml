@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.travel.travel.mapper.UserViewHistoryMapper">
+
+    <!--
+     방문 이력 저장 또는 갱신
+     UNIQUE KEY (username, content_id) 기준으로
+     이미 있으면 viewed_at / title / 이미지 갱신
+     없으면 새로 insert
+    -->
+    <insert id="insertOrUpdateHistory">
+        INSERT INTO user_view_history (
+            username,
+            content_id,
+            title,
+            first_image,
+            addr1,
+            viewed_at
+        ) VALUES (
+            #{username},
+            #{contentId},
+            #{title},
+            #{firstImage},
+            #{addr1},
+            NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            viewed_at   = NOW(),
+            title       = #{title},
+            first_image = #{firstImage},
+            addr1       = #{addr1}
+    </insert>
+
+    <!--
+     10건 초과 이력 삭제
+     가장 최근 10건만 남기고 나머지 제거
+     서브쿼리로 10번째 viewed_at 기준을 구해서 그보다 오래된 것 삭제
+    -->
+    <delete id="deleteOverflowHistory">
+        DELETE FROM user_view_history
+        WHERE username = #{username}
+          AND viewed_at &lt; (
+              SELECT v FROM (
+                  SELECT viewed_at AS v
+                  FROM user_view_history
+                  WHERE username = #{username}
+                  ORDER BY viewed_at DESC
+                  LIMIT 1 OFFSET 9
+              ) AS sub
+          )
+    </delete>
+
+    <!--
+     최근 방문 이력 조회
+     최신순 최대 10건 반환
+    -->
+    <select id="findRecentByUsername" resultType="map">
+        SELECT
+            content_id  AS contentId,
+            title,
+            first_image AS firstImage,
+            addr1,
+            viewed_at   AS viewedAt
+        FROM user_view_history
+        WHERE username = #{username}
+        ORDER BY viewed_at DESC
+        LIMIT 10
+    </select>
+
+</mapper>
