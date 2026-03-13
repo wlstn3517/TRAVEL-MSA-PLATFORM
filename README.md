@@ -147,7 +147,7 @@ Spring Cloud Gateway 기반 API Gateway
 ## Frontend
 
 * React
-* Axios
+* fetch
 * Kakao Map API
 
 ## Backend
